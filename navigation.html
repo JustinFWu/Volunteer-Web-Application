@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Homepage</title>
+    <link rel="stylesheet" href="public/stylesheets/navigation.css">
+    <link rel="stylesheet" href="public/stylesheets/style.css">
+
+</head>
+
+<body>
+    <div id="app">
+
+        <nav class="navigation">
+            <ul class="nav-list">
+                <li><a href="/">Homepage</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/manage">Manage</a></li>
+                <li>
+                    <a :href="'/profile/' + user_id">Profile</a>
+                    <ul>
+                        <li><a href="/users/sign_out">Sign Out</a></li>
+                    </ul>
+                </li>
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </nav>
+
+    </div>
+
+</body>
+
+</html>

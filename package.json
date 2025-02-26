@@ -1,0 +1,27 @@
+{
+  "name": "24s1-wdc-ug-group-82",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "./setup-and-start.sh"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-mysql-session": "^2.1.8",
+    "express-session": "^1.18.0",
+    "fs": "^0.0.1-security",
+    "morgan": "~1.9.1",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "nodemailer": "^6.9.13",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "path": "^0.12.7",
+    "vue": "^2.7.16"
+  }
+}
