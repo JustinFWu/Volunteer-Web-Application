@@ -1,0 +1,209 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@100;200&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* HEADER CSS START*/
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.6s;
+  padding: 20px 100px;
+  z-index: 10;
+}
+
+#content {
+  padding-top: 80px;
+}
+
+
+
+.sticky {
+  padding: 10px 100px;
+  background-color: #413e3e;
+}
+
+header .logo {
+  position: relative;
+  font-weight: 700;
+  color: #413e3e;
+  text-decoration: none;
+  font-size: 2em;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: 0.6s;
+}
+
+.sticky .logo {
+  color: #ffffff;
+}
+
+header ul {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+header ul li {
+  position: relative;
+  list-style: none;
+}
+
+header ul li a {
+  position: relative;
+  margin: 0 15px;
+  text-decoration: none;
+  color: #413e3e;
+  letter-spacing: 2px;
+  font-weight: 500px;
+  transition: 0.6s;
+}
+
+.sticky ul li a {
+  color: #ffffff;
+  text-shadow: 0 0 20px #d9d9d9;
+}
+
+
+header ul li a:hover {
+  color: rgb(239, 185, 255);
+  text-shadow: 0 0 50px rgb(0, 0, 0);
+}
+
+.sticky ul li a:hover {
+  text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff, 0 0 70px #fff, 0 0 80px #010031, 0 0 100px #010031, 0 0 150px #010031;
+}
+
+header .login-signout a {
+  color: rgb(255, 255, 255);
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: rgb(31, 30, 30);
+}
+
+.sticky .login-signout a {
+  -webkit-text-stroke-color: rgb(255, 255, 255);
+}
+
+/* HEADER CSS END*/
+
+html,
+body {
+  background-image: linear-gradient(5deg, #444341 0%, #444241 24%, #ece7e2 25%, #fff 85%, #fcf29f 100%);
+  margin-top: 20px;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+
+#content {
+  display: block;
+  align-items: center;
+  justify-content: center;
+  margin: 80px 0 0 0;
+}
+
+#public-news-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto 15px auto;
+  border-radius: 1em;
+}
+
+#public-news-banner p {
+  font-weight: 600;
+  font-size: 45px;
+  margin: 0px;
+  font-family: "Poppins", sans-serif;
+}
+
+
+#subtitle p {
+  color: #686565;
+  font-size: 15px;
+  font-weight: 250;
+  margin: 0px;
+  text-align: center;
+  /* Optional: Center-align the subtitle */
+}
+
+#organisation-container {
+
+  width: 100%;
+  margin-left: 30px;
+  margin-right: 30px;
+  padding-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(auto, 20.5vh);
+  gap: 3em;
+  justify-content: space-evenly;
+  overflow-y: scroll;
+}
+
+#posts-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.item {
+  position: relative;
+  /* Ensure proper positioning of pseudo-element */
+  display: flex;
+  align-items: flex-end;
+  height: 30vh;
+  width: 25vw;
+  background-color: #d9d9d9;
+  margin-bottom: 3vh;
+  border-radius: 2rem;
+  transition: 0.5s;
+  overflow: hidden;
+
+
+  background-size: cover;
+  /* cover ensures the image covers the entire div without overflowing */
+
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 2rem;
+  transition: 2s;
+  z-index: -1;
+}
+
+.item:hover::before {
+  background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.267) 100%);
+}
+
+.item:hover {
+  transform: translateY(-20px);
+  color: rgb(255, 255, 255);
+  transition: 0.3s;
+}
+
+.title {
+  width: 100%;
+  height: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+}

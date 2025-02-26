@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Homepage</title>
+    <link rel="stylesheet" href="/stylesheets/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/javascripts/index.js" defer></script>
+    <script src="https://kit.fontawesome.com/68233a162f.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <a href="/" class="logo">Logo</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li v-if="user.authorised"><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/organisation">Organisations</a></li>
+                <li class="login-signout" v-if="!user.authorised"><a href="/login">Login</a></li>
+                <li class="login-signout" v-else="user.authorised"><a href="/users/sign_out">Signout</a></li>
+            </ul>
+        </header>
+
+        <div class="clear"> </div>
+
+        <div id="content">
+            <div id="public-news-banner">
+                <p>Public News</p>
+                <div id="subtitle">
+                    <p>Learn about the most recent news about our organisations available for everybody....</p>
+                </div>
+                <div id="news-carousel" class="carousel">
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="/images/volunteer.jpg" alt="Tree Planting">
+                            <div class="carousel-caption">Tree Planting</div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="/images/volunteer2.jpg" alt="Rubbish Collection">
+                            <div class="carousel-caption">Rubbish Collection</div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="/images/volunteer3.png" alt="We Want You">
+                            <div class="carousel-caption">We Want You</div>
+                        </div>
+                    </div>
+                    <a class="carousel-control-prev" href="#news-carousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#news-carousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+            <div id="news">
+                <div id="posts-container">
+                    <div v-for="(post, index) in public_posts" class="item">
+                        <div class="content">{{ post.content }}</div>
+                        <div class="title">
+                            <p>{{ post.title }}</p>
+                            <div>
+                                <p>{{post.display_name}}</p>
+                                <p>{{post.name}}</p>
+                            </div>
+                        </div>
+
+                        <a :href="`/organisation/homepage/${post.organisation_id}`" class="icon-link">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <footer>
+        <div style="background-color: #003366; color: white; padding: 20px; text-align: center; margin-top: 20px;">
+            <h2>Contact Us</h2>
+            <p>Email: <a href="mailto:example@example.com" style="color: orange;">example@example.com</a></p>
+            <p>Tel: <a href="tel:+1234567890" style="color: orange;">+123 456 7890</a></p>
+            <p>Postal Address:</p>
+            <p>1234 Example Street,<br>
+                Example City, EX 12345</p>
+        </div>
+    </footer>
+</body>
+
+</html>

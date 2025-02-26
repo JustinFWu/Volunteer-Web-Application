@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Organisations</title>
+    <link rel="stylesheet" href="/stylesheets/organisations.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/javascripts/organisation.js" defer></script>
+    <script src="https://kit.fontawesome.com/68233a162f.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <a href="/" class="logo">Logo</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li v-if="user.authorised"><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/organisation">Organisations</a></li>
+                <li class="login-signout" v-if="!user.authorised"><a href="/login">Login</a></li>
+                <li class="login-signout" v-else="user.authorised"><a href="/users/sign_out">Signout</a></li>
+            </ul>
+        </header>
+
+        <div id="content">
+            <div id="public-news-banner">
+                <p>Organisation</p>
+                <div id="subtitle">
+                    <p>All the organisations......</p>
+                </div>
+            </div>
+
+            <div id="organisation-container">
+                <div v-for="(org, index) in organisations.names" :key="index" class="item"
+                    v-on:click="viewOrganisation(organisations.ids[index])"
+                    :style="{'background-image': organisations.image_path[index] ? `url(/images/uploads/${organisations.image_path[index]})` : ''}">
+                    <div class="title">{{ org }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

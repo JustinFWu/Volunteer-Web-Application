@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Dependencies-->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://kit.fontawesome.com/68233a162f.js" crossorigin="anonymous"></script>
+
+    <title>Dashboard</title>
+
+    <!-- main style sheet -->
+    <link rel="stylesheet" href="/stylesheets/dashboard.css">
+
+    <!-- additional style sheets for right focus -->
+    <link rel="stylesheet" href="/stylesheets/dashboard-focus-stylesheets/organisation.css">
+    <link rel="stylesheet" href="/stylesheets/dashboard-focus-stylesheets/profile.css">
+    <link rel="stylesheet" href="/stylesheets/dashboard-focus-stylesheets/manage.css">
+
+    <!-- javascript -->
+    <script src="/javascripts/dashboard.js" defer></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <a href="/" class="logo">Logo</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard" v-if="user.authorised">Dashboard</a></li>
+                <li><a href="/organisation">Organisations</a></li>
+                <li class="login-signout" v-if="!user.authorised"><a href="/login">Login</a></li>
+                <li class="login-signout" v-else="user.authorised"><a href="/users/sign_out">Signout</a></li>
+            </ul>
+        </header>
+
+
+        <div id="shadow"></div>
+        <div id="content">
+            <div id="left-navigation-bar">
+                <div id="profile">
+                    <p>{{ user.account_type == "local" ? user.username : profile.display_name }}</p>
+                </div>
+                <div id="item-container">
+                    <div :class='right_content === "profile" ? "item selected" : "item"'
+                        v-on:click="handleItemClick('profile')">
+                        <p>Profile</p>
+                    </div>
+                    <div :class='right_content === "manage" ? "item selected" : "item"'
+                        v-on:click="handleItemClick('manage')" v-if="user.isAdmin || user.isLeader">
+                        <p>Manage</p>
+                    </div>
+                    <div :class='right_content === "organisation" ? "item selected" : "item"'
+                        v-on:click="handleItemClick('organisation')">
+                        <p>My Organisations</p>
+                        <div id="organisation-container">
+                            <div v-for="(org, index) in organisations" :key="index" id="tile" class="organisation-label"
+                                v-if="org.is_member==1" :class="{ 'highlighted': index === highlightedIndex }"
+                                v-on:click="handleItemClick('organisation')">
+                                <button type="button" v-on:click="highlight(index)">{{ org.name }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="right-main-bar">
+
+                <!-- ORGANISATION -->
+                <div id="organisation-banner" v-if='right_content==="organisation"'>
+                    <p>News</p>
+                    <div class="buttons">
+                        <button type="button" class="banner-button" @click='toggleEventOrPost'>
+                            {{ viewing === 'post' ? 'Events' : 'Posts'}}
+                        </button>
+                    </div>
+                </div>
+
+                <div id="organisation-focus" v-if='right_content==="organisation"'>
+                    <div id="organisation-table-header">
+                        <!-- POSTS -->
+                        <div v-if="viewing == 'post'">
+                            <div class="left-items">
+                                <p>Post</p>
+                            </div>
+                            <div class="right-items">
+                                <p>Author</p>
+                                <p>Date</p>
+                            </div>
+                        </div>
+
+                        <!-- EVENTS -->
+                        <div v-if="viewing == 'event'">
+                            <div class="left-items">
+                                <p>Events</p>
+                            </div>
+                            <div class="right-items">
+                                <p>Author</p>
+                                <p>Deadline</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- DISPLAY EVENTS/POSTS -->
+                    <div id="organisation-table-content" :class="organisation.posts.length == 0 ? 'empty' : 'full'">
+
+                        <!-- NO POST / EVENT FOUND IMAGE -->
+                        <div v-if="organisation.posts.length == 0">
+
+                            <img src="/images/not-found.png" alt="post-event-not-found-image" id="not-found-icon">
+                            <p>{{viewing=='post' ? 'No posts yet!' : 'No events yet!'}}</p>
+
+                        </div>
+
+                        <div v-else>
+
+                            <!-- POSTS -->
+                            <div v-if="viewing == 'post'">
+
+                                <div v-for="(post, index) in organisation.posts" :key="index" :class="'table-item'">
+
+
+                                    <div class="header">
+                                        <div class="left-items">
+                                            <p>{{post.title}}</p>
+                                        </div>
+                                        <div class="right-items">
+                                            <p>{{post.display_name}}</p>
+                                            <p>{{post.post_date}}</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="body">
+                                        <p>{{post.content}}</p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- EVENTS -->
+                            <div v-if="viewing == 'event'">
+
+                                <div v-for="(event, index) in organisation.events" :key="index" :class="'table-item'">
+
+                                    <div class="header">
+                                        <div class="left-items">
+                                            <p>{{event.title}}</p>
+                                        </div>
+                                        <div class="right-items">
+                                            <p>{{event.display_name}}</p>
+                                            <p>{{event.deadline}}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="body">
+                                        <p>{{event.content}}</p>
+
+                                        <span id="rsvp-button">
+                                            <button id="button" type="button" @click="toggleRSVP(event.id)"
+                                                :class="{'rsvp': event.rsvp}">
+                                                <span class="text">RSVP</span>
+                                                <span v-if="event.rsvp" class="check">✓</span>
+                                            </button>
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- PROFILE -->
+                <div id="profile-banner" v-if='right_content==="profile"'>
+                    <p>Profile</p>
+                </div>
+
+                <div id="profile-focus" v-if='right_content==="profile"'>
+                    <form @submit.prevent="ProfileFormSubmit" id="form">
+                        <div>
+                            <span v-if="user.account_type == 'local'">
+                                <label for="username">Username:</label>
+                                <input type="text" id="username" name="username" v-model="profile.username" disabled>
+                            </span>
+
+                            <span>
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" v-model="profile.email" disabled>
+                            </span>
+
+                            <span>
+                                <label for="id">ID:</label>
+                                <input type="text" id="id" name="id" v-model="profile.id" disabled>
+                            </span>
+                        </div>
+                        <hr>
+
+                        <label for="display_name">Display Name:</label>
+                        <input type="text" id="display_name" name="display_name" v-model="profile.display_name">
+
+
+                        <label for="first_name">First Name:</label>
+                        <input type="text" id="first_name" name="first_name" v-model="profile.first_name">
+
+
+                        <label for="last_name">Last Name:</label>
+                        <input type="text" id="last_name" name="last_name" v-model="profile.last_name">
+
+                        <button type="submit">Save Changes</button>
+                    </form>
+                </div>
+
+
+
+                <!-- MANAGE-->
+                <div id="manage-banner" v-if='right_content==="manage"'>
+                    <p>Manage</p>
+                    <div class="buttons">
+                        <button type="button" class="banner-button" v-if='user.isAdmin'
+                            v-on:click="handleManageState(0)">Relations</button>
+                        <button type="button" class="banner-button" v-if='user.isAdmin'
+                            v-on:click="handleManageState(1)">Users</button>
+
+                        <button type="button" class="banner-button" v-if='user.isAdmin'
+                            v-on:click="handleManageState(2)">Organisations</button>
+                    </div>
+                </div>
+
+                <div id="manage-focus" v-if='right_content==="manage"'>
+
+
+                    <!-- MANAGING RELATIONS -->
+                    <div class="table-container" v-if="manage.manage_state===0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Organisation</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(object, index) in manage.relations" :key="index">
+                                    <td>{{object.user_display_name}}</td>
+                                    <td>{{object.organisation_name}}</td>
+                                    <td><button class="manage-buttons" type="button"
+                                            v-on:click="removeConnection(object.user_id, object.organisation_id)">Remove
+                                            Connection</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- MANAGING USERS -->
+                    <div class="table-container" v-if="manage.manage_state===1">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Display Name</th>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Admin</th>
+                                    <th>Leader</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(user, index) in manage.users" :key="index">
+                                    <td><button type="button" class="profile-button"
+                                            @click="userProfileForm(index)">{{user.display_name}}</button></td>
+                                    <td>{{user.id}}</td>
+                                    <td>{{user.username}}</td>
+                                    <td>{{user.email}}</td>
+                                    <td>{{user.first_name}}</td>
+                                    <td>{{user.last_name}}</td>
+                                    <td>
+                                        <p v-if="user.isAdmin">Yes</p>
+                                        <button v-else class="promote-buttons" type="button"
+                                            v-on:click="promote(user.id)">Promote</button>
+                                    </td>
+                                    <td>{{user.isLeader ? "Yes" : "No"}}</td>
+                                    <td><button class="manage-buttons" type="button"
+                                            v-if="!(user.isAdmin || user.isLeader)"
+                                            v-on:click="removeUser(user.id)">Remove User</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- MANAGING ORGANISATION LEADERS -->
+                    <div class="table-container" v-if="manage.manage_state===2">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Leader</th>
+                                    <th>Organisation</th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(user, index) in manage.organisation_leaders" :key="index">
+                                    <td>{{ user.leader_display_name }}</td>
+                                    <td>{{ user.organisation_name }}</td>
+                                    <td>
+                                        <div v-if="leaderOptions(user.organisation_id, user.user_id).length > 1">
+                                            <select v-model="user.newLeaderId">
+                                                <option
+                                                    v-for="option in leaderOptions(user.organisation_id, user.user_id)"
+                                                    :key="option.id" :value="option.id"
+                                                    v-if="option.user_id !== user.leader_id">
+                                                    {{ option.name }} ({{ option.user_id }})
+                                                </option>
+                                            </select>
+                                            <button type="button" class="manage-buttons"
+                                                @click="submitLeaderChange(user)">Change</button>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <i @click="deleteOrganisation(user.organisation_id)"
+                                            class="fa-solid fa-xmark"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <div class="button-container" v-if="manage.manage_state===2">
+                        <button id="add-organisation-button" type="button" @click="toggleForm('organisation')">
+                            <span>Add Organisation</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FORMS -->
+        <div id="add-organisation-form" v-if="form.visible && form.context == 'organisation'">
+            <form @submit.prevent="submitOrganisationForm" class="organisation-form">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" cols="50" required></textarea>
+                </div>
+
+                <div class="button-group">
+                    <input type="submit" value="Create" class="submit-button">
+                    <button type="button" class="close-button" @click="toggleForm('organisation')">Close</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="edit-user-form" v-if="form.visible && form.context == 'profile'">
+            <form @submit.prevent="submitEditUserForm" class="user-form">
+                <div class="form-group">
+                    <label for="display_name">Display Name:</label>
+                    <input type="text" id="profile_form_display_name" name="display_name"
+                        v-model="form.profile_info.display_name">
+                </div>
+
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" id="profile_form_first_name" name="first_name"
+                        v-model="form.profile_info.first_name">
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" id="profile_form_last_name" name="last_name"
+                        v-model="form.profile_info.last_name">
+                </div>
+
+
+                <div class="button-group">
+                    <button type="submit" class="submit-button">Save Changes</button>
+                    <button type="button" class="close-button" @click="toggleForm('profile')">Close</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Organisation - Homepage</title>
+    <link rel="stylesheet" href="/stylesheets/org_homepage.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="/javascripts/org_homepage.js" defer></script>
+    <script src="https://kit.fontawesome.com/68233a162f.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <a href="/" class="logo">Logo</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li v-if="user.authorised"><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/organisation">Organisations</a></li>
+                <li class="login-signout" v-if="!user.authorised"><a href="/login">Login</a></li>
+                <li class="login-signout" v-else="user.authorised"><a href="/users/sign_out">Signout</a></li>
+            </ul>
+        </header>
+
+
+        <div id="content">
+            <div id="banner">
+                <div>
+                    <p>{{ organisation.name }}</p>
+                    <button v-if="user.authorised && user.joined_organisation" type="button"
+                        @click="toggleNotifications" :class="{'notification-active': organisation.notifications}"
+                        id="notification-button">
+                        <i
+                            :class="organisation.notifications ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash selected'"></i>
+                    </button>
+                </div>
+
+
+                <span id="banner-buttons" v-if="user.authorised">
+                    <button type="button"
+                        @click.stop="toggleForm('edit-organisation', 'org-appear', organisation.id, -1)"
+                        v-if="organisation.leader_id === user.user_id || user.isAdmin">Edit</button>
+
+                    <button type="button" @click.stop="toggleForm('upload', 'show', -1, -1)"
+                        v-if="organisation.leader_id === user.user_id">Upload Image</button>
+                    <span id="join-button">
+                        <button type="button" @click="toggleMembership" :class="{'joined': user.joined_organisation}">
+                            <span class="text">{{ user.joined_organisation ? 'Joined' : 'Join' }}</span>
+                            <span v-if="user.joined_organisation" class="check">✓</span>
+                        </button>
+                    </span>
+                    <button v-if="user.joined_organisation" type="button"
+                        @click.stop="toggleForm('post', 'create', -1, -1)">Create Post</button>
+                </span>
+            </div>
+
+            <img v-if="organisation.image_path" :src="`/images/uploads` + `/${organisation.image_path}`"
+                alt="Organisation Image" id="organisation-image">
+            <div v-else id="image-block"> </div>
+
+            <div class="organisation-description">
+                <p>{{organisation.description}}</p>
+            </div>
+
+
+            <div id="main">
+                <div id="main-toggle-container">
+                    <button type="button" @click="toggleMain('post')"
+                        :class="{'main_selected': main.type === 'post'}">Post</button>
+                    <button type="button" @click="toggleMain('event')"
+                        :class="{'main_selected': main.type === 'event'}">Event</button>
+                </div>
+
+                <div id="post-event-container">
+                    <div v-if="main.type == 'post'" class="post-grid">
+                        <div v-for="(post, index) in organisation.posts" :key="post.id" class="post">
+                            <span class="buttons-container">
+                                <button class="buttons" type="button" v-if="post.user_id == user.user_id"
+                                    @click="toggleForm('post','edit', post.id, index)">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button class="buttons" type="button" v-if="post.user_id == user.user_id"
+                                    @click="deletePost(post.id)">
+                                    <i class="fa-solid fa-eraser"></i>
+                                </button>
+                            </span>
+
+                            <div class="content">{{ post.content }}</div>
+                            <div>
+                                <p class="title">{{ post.title }}</p>
+                                <p class="display_name">{{ post.display_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="event-grid">
+                        <div v-for="(event, index) in organisation.events" :key="event.id" class="event">
+                            <p class="title">{{ event.title }}</p>
+                            <p class="deadline">{{ formatDate(event.deadline) }}</p>
+                            <p class="content">{{ event.content }}</p>
+
+
+                            <p class="display_name">{{ event.display_name }}</p>
+
+
+
+
+
+
+                            <span id="rsvp-button" v-if="user.authorised">
+                                <button class="buttons" type="button" @click="toggleRSVP(event.id)"
+                                    :class="{'rsvp': event.rsvp}">
+                                    <i class="fa-solid fa-square-check" v-if="event.rsvp"></i>
+                                    <i class="fa-regular fa-square-check" v-else></i>
+                                </button>
+                            </span>
+
+                            <span class="buttons-container">
+                                <button class="buttons" type="button" v-if="event.user_id == user.user_id"
+                                    @click="toggleForm('event','edit', event.id, index)">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+
+                                <button class="buttons" type="button" v-if="event.user_id == user.user_id"
+                                    @click="seeAttenders(event.id)">
+                                    <i class="fa-solid fa-users"></i>
+                                </button>
+
+                                <button class="buttons" type="button" v-if="event.user_id == user.user_id"
+                                    @click="deleteEvent(event.id)">
+                                    <i class="fa-solid fa-eraser"></i>
+                                </button>
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="upload-form" v-if="forms.visible && forms.type == 'upload'">
+            <button type="button" @click.stop="toggleForm('upload', 'close', -1, -1)">Close</button>
+            <br>
+            <br>
+            <br>
+            <br>
+
+            <form id="uploadForm" @submit.prevent="uploadImage(organisation.id)">
+                <input type="file" id="image" name="image" accept="image/*" required>
+                <br>
+                <br>
+                <br>
+                <br>
+                <input type="submit" value="Upload">
+            </form>
+
+        </div>
+
+        <div id="post-form" v-if="forms.visible && forms.type == 'post'">
+            <h2>Create a Post or Event</h2>
+            <br>
+            <br>
+            <span class="toggle-container" v-if="!forms.editting_existing">
+                <button type="button" @click="toggleForm('event', 'create', -1, -1)">Event</button>
+            </span>
+            <button type="button" @click.stop="toggleForm('post', 'close', -1, -1)">Close</button>
+            <br>
+            <br>
+            <br>
+
+            <form @submit.prevent="submitPostForm">
+                <input type="text" v-model="forms.post_data.title" id="postTitle" name="postTitle"
+                    placeholder="Post title" required><br><br>
+
+                <textarea v-model="forms.post_data.message" id="postContent" name="postContent" rows="4" cols="50"
+                    placeholder="Type your text here..."></textarea><br><br>
+
+                <p>Public</p>
+                <input type="checkbox" v-model="forms.post_data.public" id="postPublic" name="postPublic"><br><br>
+
+                <input id="submit" type="submit" value="Submit">
+            </form>
+        </div>
+
+        <div id="event-form" v-if="forms.visible && forms.type == 'event'">
+            <h2>Create an Event or Post</h2>
+            <br>
+            <br>
+            <span class="toggle-container" v-if="!forms.editting_existing">
+                <button type="button" @click="toggleForm('post', 'create', -1, -1)">Post</button>
+            </span>
+            <button type="button" @click.stop="toggleForm('event', 'close', -1, -1)">Close</button>
+            <br>
+            <br>
+            <br>
+            <form @submit.prevent="submitEventForm">
+
+                <input type="text" v-model="forms.event_data.title" id="eventTitle" name="eventTitle"
+                    placeholder="Event title" required><br><br>
+
+                <input type="datetime-local" v-model="forms.event_data.deadline" id="eventDate" name="eventDate"
+                    placeholder="Select deadline" required><br><br>
+
+                <textarea v-model="forms.event_data.message" id="eventContent" name="eventContent" rows="4" cols="50"
+                    placeholder="Type your text here..."></textarea><br><br>
+
+                <input type="submit" id="submit2" value="Submit">
+            </form>
+        </div>
+
+        <div id="attenders-form" v-if="forms.visible && forms.type == 'attenders'">
+            <button type="button" @click.stop="toggleForm('attenders', 'close', -1, -1)">Close</button>
+            <br>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(attender, index) in attenders" :key="index">
+                        <td>{{attender.display_name}}</td>
+                        <td>{{attender.id}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="edit-organisation-form" v-if="forms.visible && forms.type == 'edit-organisation'">
+            <button type="button" @click.stop="toggleForm('edit-organisation', 'close', -1, -1)">Close</button>
+            <br>
+            <br>
+            <form @submit.prevent="submitOrganisationForm">
+                <input type="text" v-model="forms.edit_organisation_data.name" id="organisationTitle"
+                    name="organisationTitle" placeholder="Organisation title" required><br><br>
+
+                <textarea v-model="forms.edit_organisation_data.description" id="organisationDescription"
+                    name="organisationDescription" rows="4" cols="50"
+                    placeholder="Type your text here..."></textarea><br><br>
+                <input id="submit3" type="submit" value="Submit">
+            </form>
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>
